@@ -9,6 +9,7 @@
 class USkeletalMeshComponent;
 class UParticleSystem;
 class UDamageType;
+class UCameraShakeBase;
 
 UCLASS()
 class COOPGAME_API ASWeapon : public AActor
@@ -20,14 +21,11 @@ public:
 	ASWeapon();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	virtual void Fire();
+	void PlayerFireEffects(FVector TracerEnd);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float Damage = 20.f;
@@ -49,9 +47,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* TracerEffect;
-	
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<UCameraShakeBase> FireCamShake;
+
+public:
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void Fire();
 
 };
