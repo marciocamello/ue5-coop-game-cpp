@@ -7,6 +7,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/SHealthComponent.h"
+#include "CoopGame/CoopGame.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -22,6 +25,10 @@ ASCharacter::ASCharacter()
 	SpringArmComp->SetupAttachment(RootComponent);
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
+
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+	
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 	
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
@@ -30,18 +37,23 @@ ASCharacter::ASCharacter()
 	zoomInterpSpeed = 20.0f;
 	
 	WeaponAttachSocketName = "WeaponSocket";
-	
 }
 
 // Called when the game starts or when spawned
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	CameraComp = FindComponentByClass<UCameraComponent>();
 	DefaultFOV = CameraComp->FieldOfView;
 
 	// spawn a default weapon
-	SpawnWeapon(StartWeaponClass);
+	if(StartWeaponClass)
+	{
+		SpawnWeapon(StartWeaponClass);
+	}
+
+	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
 void ASCharacter::MoveForward(float Value)
@@ -98,9 +110,9 @@ void ASCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
-
-	float newFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, zoomInterpSpeed);
 	
+	CameraComp = FindComponentByClass<UCameraComponent>();
+	float newFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, zoomInterpSpeed);
 	CameraComp->SetFieldOfView(newFOV);
 }
 
@@ -150,5 +162,20 @@ void ASCharacter::StopFire()
 	if (CurrentWeapon)
 	{
 		CurrentWeapon->StopFire();
+	}
+}
+
+void ASCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	if(Health <= 0.0f && !bDied)
+	{
+		bDied = true;
+		
+		// die
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		DetachFromControllerPendingDestroy();
+		SetLifeSpan(10.0f);
+
 	}
 }
