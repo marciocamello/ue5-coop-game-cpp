@@ -2,6 +2,14 @@
 
 
 #include "SProjectileWeapon.h"
+#include "TimerManager.h"
+
+void ASProjectileWeapon::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	TimeBetweenShots = 60 / RateOfFire;
+}
 
 void ASProjectileWeapon::Fire()
 {
@@ -19,5 +27,19 @@ void ASProjectileWeapon::Fire()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, SpawnParams);
+		
+		LastFireTime = GetWorld()->TimeSeconds;
 	}
+}
+
+void ASProjectileWeapon::StartFire()
+{
+	float FirstDelay = FMath::Max(LastFireTime + TimeBetweenShots - GetWorld()->TimeSeconds, 0.0f);
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_TimeBetweenShots, this, &ASProjectileWeapon::Fire, TimeBetweenShots,true, FirstDelay);
+}
+
+void ASProjectileWeapon::StopFire()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_TimeBetweenShots);
 }
