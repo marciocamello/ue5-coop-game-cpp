@@ -80,14 +80,17 @@ void ASWeapon::Fire()
 			UGameplayStatics::ApplyPointDamage(HitActor, ActualDamage, ShotDirection, Hit, MyOwner->GetInstigatorController(), this, DamageType);
 			
 			UParticleSystem* SelectedEffect = nullptr;
+			USoundBase* SelectedSound = nullptr;
 			switch (SurfaceType)
 			{
 				case SURFACE_FLESHDEFAULT:
 				case SURFACE_FLESHVULNERABLE:
 					SelectedEffect = FleshImpactEffect;
+					SelectedSound = FleshImpactSound;
 					break;
 				default:
 					SelectedEffect = DefaultImpactEffect;
+					SelectedSound = DefaultImpactSound;
 					break;
 			}
 
@@ -96,6 +99,11 @@ void ASWeapon::Fire()
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), SelectedEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
 			}
 
+			if(SelectedSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(GetWorld(), SelectedSound, Hit.ImpactPoint);
+			}
+			
 			TracerEndPoint = Hit.ImpactPoint;
 		}
 
@@ -129,14 +137,20 @@ void ASWeapon::PlayerFireEffects(FVector TracerEnd)
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, MeshComp, MuzzleSocketName);
 	}
 
+	FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
+	
 	if(TracerEffect)
 	{
-		FVector MuzzleLocation = MeshComp->GetSocketLocation(MuzzleSocketName);
 		UParticleSystemComponent* TracerComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), TracerEffect, MuzzleLocation);
 		if(TracerComp)
 		{
 			TracerComp->SetVectorParameter("Target", TracerEnd);
 		}
+	}
+
+	if(FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 	}
 
 	APawn* MyOwner = Cast<APawn>(GetOwner());

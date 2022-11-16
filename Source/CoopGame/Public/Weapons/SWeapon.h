@@ -10,6 +10,7 @@ class USkeletalMeshComponent;
 class UParticleSystem;
 class UDamageType;
 class UCameraShakeBase;
+class USoundBase;
 
 UCLASS()
 class COOPGAME_API ASWeapon : public AActor
@@ -48,7 +49,16 @@ protected:
 	UParticleSystem* DefaultImpactEffect;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* FleshImpactSound;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* FleshImpactEffect;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	USoundBase* DefaultImpactSound;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly,Category = "Weapon")
+	USoundBase* FireSound;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* TracerEffect;

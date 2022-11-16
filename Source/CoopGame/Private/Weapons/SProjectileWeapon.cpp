@@ -3,6 +3,7 @@
 
 #include "Weapons/SProjectileWeapon.h"
 #include "TimerManager.h"
+#include "Kismet/GameplayStatics.h"
 
 void ASProjectileWeapon::BeginPlay()
 {
@@ -25,6 +26,11 @@ void ASProjectileWeapon::Fire()
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		if(FireSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetActorLocation());
+		}
 		
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, MuzzleLocation, EyeRotation, SpawnParams);
 		

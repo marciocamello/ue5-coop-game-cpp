@@ -6,6 +6,8 @@
 #include "SWeapon.h"
 #include "SProjectileWeapon.generated.h"
 
+class USoundCue;
+
 /**
  * 
  */
