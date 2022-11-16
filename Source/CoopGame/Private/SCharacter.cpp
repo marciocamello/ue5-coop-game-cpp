@@ -3,7 +3,7 @@
 
 #include "SCharacter.h"
 
-#include "SWeapon.h"
+#include "Weapons/SWeapon.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
