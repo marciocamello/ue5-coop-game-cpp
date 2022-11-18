@@ -10,6 +10,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SHealthComponent.h"
 #include "CoopGame/CoopGame.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -47,10 +48,13 @@ void ASCharacter::BeginPlay()
 	CameraComp = FindComponentByClass<UCameraComponent>();
 	DefaultFOV = CameraComp->FieldOfView;
 
-	// spawn a default weapon
-	if(StartWeaponClass)
+	if(HasAuthority())
 	{
-		SpawnWeapon(StartWeaponClass);
+		// spawn a default weapon
+		if(StartWeaponClass)
+		{
+			SpawnWeapon(StartWeaponClass);
+		}
 	}
 
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
@@ -86,7 +90,7 @@ void ASCharacter::EndZoom()
 	bWantsToZoom = false;
 }
 
-void ASCharacter::SpawnWeapon(TSubclassOf<ASWeapon> WeaponClass)
+void ASCharacter::SpawnWeapon_Implementation(TSubclassOf<ASWeapon> WeaponClass)
 {
 	if (CurrentWeapon)
 	{
@@ -169,13 +173,21 @@ void ASCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float Hea
 {
 	if(Health <= 0.0f && !bDied)
 	{
+		// die
 		bDied = true;
 		
-		// die
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		DetachFromControllerPendingDestroy();
 		SetLifeSpan(10.0f);
 
 	}
+}
+
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASCharacter, CurrentWeapon);
+	DOREPLIFETIME(ASCharacter, bDied);
 }
