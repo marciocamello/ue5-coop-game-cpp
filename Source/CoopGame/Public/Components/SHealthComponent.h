@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "SHealthComponent.generated.h"
 
+class USHealthComponent;
+
 // OnHealthChanged event
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_SixParams(FOnHealthChangedSignature, USHealthComponent*, HealthComp, float, Health, float, HealthDelta, const class UDamageType*, DamageType, class AController*, InstigatedBy, AActor*, DamageCauser);
 
