@@ -32,7 +32,7 @@ ASExplosiveBarrel::ASExplosiveBarrel()
 	ExplosionImpulse = 400;
 	ExplosionDamage = 40;
 	
-	SetReplicates(true);
+	bReplicates = true;
 	SetReplicateMovement(true);
 	
 	NetUpdateFrequency = 66.0f;

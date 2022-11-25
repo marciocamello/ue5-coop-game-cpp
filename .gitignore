@@ -14,4 +14,8 @@ Saved
 *.xcworkspace
 Build
 Windows
+
+# assets from store or other sources
 SFX
+Hack_And_Slash_FX
+sA_PickupSet_1

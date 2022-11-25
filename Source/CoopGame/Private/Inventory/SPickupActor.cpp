@@ -6,6 +6,7 @@
 #include "Components/DecalComponent.h"
 #include "Components/SphereComponent.h"
 #include "Powerups/SPowerupActor.h"
+#include "Net/UnrealNetwork.h"
 #include "TimerManager.h"
 
 // Sets default values
@@ -19,6 +20,10 @@ ASPickupActor::ASPickupActor()
 	DecalComp->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
 	DecalComp->DecalSize = FVector(64, 75, 75);
 	DecalComp->SetupAttachment(RootComponent);
+
+	CooldownDuration = 10.0f;
+
+	bReplicates = true;
 }
 
 // Called when the game starts or when spawned
@@ -26,7 +31,10 @@ void ASPickupActor::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Respawn();
+	if(HasAuthority())
+	{
+		Respawn();
+	}
 }
 
 void ASPickupActor::Respawn()
@@ -47,7 +55,7 @@ void ASPickupActor::NotifyActorBeginOverlap(AActor* OtherActor)
 {
 	Super::NotifyActorBeginOverlap(OtherActor);
 
-	if(PowerupInstance)
+	if(HasAuthority() && PowerupInstance)
 	{
 		PowerupInstance->ActivatePowerup(OtherActor);
 		PowerupInstance = nullptr;

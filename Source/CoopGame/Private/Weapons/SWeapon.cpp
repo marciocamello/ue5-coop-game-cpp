@@ -32,7 +32,7 @@ ASWeapon::ASWeapon()
 	BaseDamage = 20.0f;
 	RateOfFire = 600;
 
-	SetReplicates(true);
+	bReplicates = true;
 	
 	NetUpdateFrequency = 66.0f;
 	MinNetUpdateFrequency = 33.0f;
