@@ -9,7 +9,7 @@
 class USHealthComponent;
 class UStaticMeshComponent;
 class URadialForceComponent;
-class UParticleSystem;\
+class UParticleSystem;
 class USoundBase;
 
 UCLASS()

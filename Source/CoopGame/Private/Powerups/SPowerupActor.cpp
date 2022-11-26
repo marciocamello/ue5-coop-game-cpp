@@ -2,6 +2,8 @@
 
 
 #include "Powerups/SPowerupActor.h"
+#include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -36,6 +38,10 @@ void ASPowerupActor::OnTickPowerup()
 void ASPowerupActor::OnRep_PowerupActive()
 {
 	onGetPowerupStateChanged(bIsPowerupActive);
+
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), PowerupEffect, GetActorLocation());
+
+	UGameplayStatics::PlaySoundAtLocation(GetWorld(), PowerupSound, GetActorLocation());
 }
 
 void ASPowerupActor::ActivatePowerup(AActor* ActivateFor)

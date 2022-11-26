@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "SPowerupActor.generated.h"
 
+class UNiagaraSystem;
+
 UCLASS()
 class COOPGAME_API ASPowerupActor : public AActor
 {
@@ -44,7 +46,7 @@ protected:
 	void onGetPowerupStateChanged(bool bNewIsActive);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Powerups")
-	UParticleSystem* PowerupEffect;
+	UNiagaraSystem* PowerupEffect;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Powerups")
 	USoundBase* PowerupSound;
