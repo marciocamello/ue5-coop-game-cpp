@@ -175,6 +175,8 @@ void ASCharacter::OnHealthChanged(USHealthComponent* OwningHealthComp, float Hea
 	{
 		// die
 		bDied = true;
+
+		CurrentWeapon->StopFire();
 		
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
