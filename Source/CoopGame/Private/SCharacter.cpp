@@ -38,6 +38,8 @@ ASCharacter::ASCharacter()
 	zoomInterpSpeed = 20.0f;
 	
 	WeaponAttachSocketName = "WeaponSocket";
+
+	bIsArmed = false;
 }
 
 // Called when the game starts or when spawned
@@ -105,6 +107,7 @@ void ASCharacter::SpawnWeapon_Implementation(TSubclassOf<ASWeapon> WeaponClass)
 	{
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+		bIsArmed = true;
 	}
 }
 
@@ -192,4 +195,5 @@ void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME(ASCharacter, CurrentWeapon);
 	DOREPLIFETIME(ASCharacter, bDied);
+	DOREPLIFETIME(ASCharacter, bIsArmed);
 }

@@ -43,8 +43,8 @@ ASTrackerBot::ASTrackerBot()
 	MovementForce = 1000;
 	RequiredDistanceToTarget = 100;
 
-	ExplosionDamage = 40;
-	ExplosionRadius = 200;
+	ExplosionDamage = 60;
+	ExplosionRadius = 350;
 
 	SelfDamageInterval = 0.25f;
 }
@@ -69,7 +69,7 @@ void ASTrackerBot::BeginPlay()
 void ASTrackerBot::HandleTakeDamage(USHealthComponent* OwningHealthComp, float Health, float HealthDelta,
 	const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
 {
-	// explode on hitpoints == 0
+	// create a dynamic material instance
 	if(MatInst == nullptr)
 	{
 		MatInst = MeshComp->CreateAndSetMaterialInstanceDynamicFromMaterial(0, MeshComp->GetMaterial(0));
@@ -81,7 +81,10 @@ void ASTrackerBot::HandleTakeDamage(USHealthComponent* OwningHealthComp, float H
 		MatInst->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Health %s of %s"), *FString::SanitizeFloat(Health), *GetName());
+	if (DebugTrackerBotDrawing)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Health %s of %s"), *FString::SanitizeFloat(Health), *GetName());
+	}
 
 	// self destruct
 	if(Health <= 0.0f)
@@ -92,15 +95,41 @@ void ASTrackerBot::HandleTakeDamage(USHealthComponent* OwningHealthComp, float H
 
 FVector ASTrackerBot::GetNextPathPoint()
 {
-	// Hack to get player location
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	AActor* BestTarget = nullptr;
+	float NearestTargetDistance = FLT_MAX;
 	
-	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
-
-	if (NavPath && NavPath->PathPoints.Num() > 1)
+	for (TActorIterator<APawn> It(GetWorld()); It; ++It)
 	{
-		// Return next point in the path
-		return NavPath->PathPoints[1];
+		APawn* TestPawn = *It;
+		if(TestPawn == nullptr || USHealthComponent::IsFriendly(TestPawn, this))
+		{
+			continue;
+		}
+		
+		USHealthComponent* TestHealthComp = Cast<USHealthComponent>(TestPawn->GetComponentByClass(USHealthComponent::StaticClass()));
+		if(TestHealthComp && TestHealthComp->GetHealth() > 0.0f)
+		{
+			const float Distance = (TestPawn->GetActorLocation() - GetActorLocation()).Size();
+			if(Distance < NearestTargetDistance)
+			{
+				NearestTargetDistance = Distance;
+				BestTarget = TestPawn;
+			}
+		}
+	}
+
+	if(BestTarget)
+	{
+		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), BestTarget);
+
+		GetWorldTimerManager().ClearTimer(TimerHandle_RefreshPath);
+		GetWorldTimerManager().SetTimer(TimerHandle_RefreshPath, this, &ASTrackerBot::RefreshPath, 5.0f, false);
+		
+		if(NavPath && NavPath->PathPoints.Num() > 1)
+		{
+			// Return next point in the path
+			return NavPath->PathPoints[1];
+		}
 	}
 
 	// Failed to find path
@@ -124,7 +153,7 @@ void ASTrackerBot::SelfDestruct()
 	MeshComp->SetVisibility(false, true);
 	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	if(HasAuthority())
+	if(HasAuthority()) 
 	{
 		TArray<AActor*> IgnoredActors;
 		IgnoredActors.Add(this);
@@ -195,7 +224,7 @@ void ASTrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 	if(!bStartedSelfDestruction && !bExploded)
 	{
 		ASCharacter* PlayerPawn = Cast<ASCharacter>(OtherActor);
-		if(PlayerPawn )
+		if(PlayerPawn && !USHealthComponent::IsFriendly(OtherActor, this))
 		{
 			// We overlapped with a player
 
@@ -277,4 +306,9 @@ void ASTrackerBot::OnCheckNearbyBots()
 	{
 		DrawDebugString(GetWorld(), GetActorLocation(), PowerLevelString, nullptr, FColor::White, 0.0f, true);
 	}
+}
+
+void ASTrackerBot::RefreshPath()
+{
+	NextPathPoint = GetNextPathPoint();
 }

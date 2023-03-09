@@ -69,6 +69,9 @@ protected:
 	// Pawn died previously
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
 	bool bDied;
+	
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Player")
+	bool bIsArmed;
 
 public:	
 	// Called every frame
